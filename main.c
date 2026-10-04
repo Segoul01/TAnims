@@ -29,6 +29,9 @@ int main(int argc, char *argv[]) {
         if (strcmp(argv[1], "sidescroller") == 0) {
             sideScrollerAnim();
         }
+        else if (strcmp(argv[1], "math") == 0) {
+            math(argv[2]);
+        }
         else {  // Default Case
             help();
         }
@@ -41,6 +44,13 @@ void help() {
     printf("\tList of commands available:\n");
     printf("\t-------------------------------------------\n\n");
     printf("\tsidescroller\t:\ta simple side scrolling animation\n");
+    printf("\tmath\t:\tmath function visualizer (type math -l for list of math functions available)\n");
+}
+
+void mathHelp() {
+    printf("\tList of available math functions:\n");
+    printf("\t------------------------------------------\n\n");
+    // printf("\t");
 }
 
 void sideScrollerAnim() {
@@ -93,5 +103,11 @@ void sideScrollerAnim() {
 }
 
 void math(char func[]) {
+    if (strcmp(func, "-l") == 0) {
+        mathHelp();
+        return;
+    }
     
+
+    return;
 }
