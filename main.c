@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <string.h>
 #include <math.h>
+#include <stdbool.h>
 
 int random_in_range(int min, int max) {
     return (rand() % (max - min + 1)) + min;
@@ -109,6 +110,7 @@ void sideScrollerAnim() {
     }
 }
 
+
 void mathVis(int argc, char *argv[]) {
     if (argc < 3 || strcmp(argv[2], "-l") == 0) {
         mathHelp();
@@ -117,28 +119,61 @@ void mathVis(int argc, char *argv[]) {
 
     struct winsize w;
 
-    printf("\033[?25l");
-    printf("\033[2J\033[3J\033[H");
+    int funcIndex = 2;
+    bool isAnimating = false;
+    double animOffset = 0.0;
+    double animSpeed = 0.1;
+    double frameWaitTime = 10000;
 
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
-        for (int i = 1; i <= (w.ws_col); i++) {
-            double x = (((double) (i - 1) / w.ws_col) * 20.0) - 10.0;
-            int row = (int) (mathGetFuncValue(x, argv[2]) * (w.ws_row / 6));
-            row = row + (w.ws_row / 2);
-            row = w.ws_row - row;
-            // printf("%d\t", row);
-            // printf("(%d, %d)\n", row, i);
-            if (row > 0 && row < w.ws_row) {
-                printf("\033[%d;%dH", row, i);
-                printf("█");
-            }
-        }
 
-        printf("\033[%d;%dH", w.ws_row - 1, 1);
+    if (strcmp(argv[2], "-a") == 0 && argc == 4) {
+        funcIndex = 3;
+        isAnimating = true;
     }
     else {
-        perror("ioctl");
+        funcIndex = 2;
+        isAnimating = false;
     }
+
+    double step = 0.01;
+    double range = 20.0;
+
+    printf("\033[?25l");
+
+    do
+    {
+        printf("\033[2J\033[3J\033[H");
+    
+        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
+            for (double x = -(range * 0.5); x <= (range * 0.5); x+=step) {
+                double y = mathGetFuncValue(x + animOffset, argv[funcIndex]);
+
+                // printf("%lf\n", x);
+                // int col = (int) ((x + (range * 0.5)) / (range)) * w.ws_col;
+                int col = (int) (((x + (range * 0.5)) / range) * w.ws_col);
+                int row = (int) (y * (w.ws_row / 4));
+                row = row + (w.ws_row / 2);
+                row = w.ws_row - row;
+// 
+                if (row > 0 && row < w.ws_row) {
+                    printf("\033[%d;%dH", row, col);
+                    printf("█");
+                }
+            }
+    
+            printf("\n\033[%d;%dH", w.ws_row - 1, 1);
+            
+            if (isAnimating) {
+                animOffset += animSpeed;
+                usleep(frameWaitTime);
+            }
+        }
+        else {
+            perror("ioctl");
+        }
+
+    } while (isAnimating);
+    
 
 
     return;
@@ -170,7 +205,11 @@ double mathGetFuncValue(double x, char func[]) {
     else if (strcmp(func, "cot") == 0) {
         return 1.0/mathGetFuncValue(x, "tan");
     }
+    else if (strcmp(func, "cool") == 0) {
+        return log(x);
+    }
     else {
         return x;
     }
+
 }
