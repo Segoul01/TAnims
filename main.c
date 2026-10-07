@@ -59,6 +59,7 @@ void mathHelp() {
     printf("\tsine\t\tcos\n");
     printf("\tcosec\t\tsec\n");
     printf("\ttan\t\tcot\n");
+    printf("\tcool (just a log function for now)\n");
 }
 
 void sideScrollerAnim() {
